@@ -29,7 +29,7 @@ public class Bookmark {
 	}
 	
 	public void print() {
-		System.out.print(name+", "+addedTime+", "+url+", "+groupName+", "+memo+"\n");
+		System.out.print(name+","+addedTime+","+url+","+groupName+","+memo+"\n");
 	};	
 	
 }

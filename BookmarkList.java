@@ -1,5 +1,5 @@
 import java.io.File;
-import java.io.FileNotFoundException;
+//import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
@@ -16,11 +16,36 @@ public class BookmarkList {
 		bookmarkList = new Bookmark[100];
 		bookmarkCounter = 0;
 		bookmarkDB = new File(bookmarkFileName);
-		//bookmarkDB = new File("bookmark-normal.txt");
+		
+		try {
+			bookmarkDBScanner = new Scanner(bookmarkDB);
+		} catch (Exception e) {
+			System.out.println("File not found!");
+		}
+		
+		while(bookmarkDBScanner.hasNextLine()) {
+			String data = bookmarkDBScanner.nextLine(); 
+			if (data.startsWith("//") || data.isEmpty()) {
+				continue;
+			}
+			
+			Bookmark tempBookmark = this.splitLine(data);
+			if(this.checkRule(tempBookmark) == true) {
+				bookmarkList[bookmarkCounter] = this.splitLine(data);
+				bookmarkCounter++;
+			}
+			else {
+				// System.out.println("Rule wrong");
+				System.exit(0);
+			}
+		}
+		// System.out.println("Bookmark synchronization completed!");
+		// System.out.println("Current number of bookmark: "+(bookmarkCounter));
 	}
 	
 	public Bookmark splitLine(String line) {
 		String[] bookmarkData = line.split(",|;", -1);
+		/*
 		if (bookmarkData.length == 4) { // input 하는 경우 (addedTime은 X)
 			for (int i = 0; i < 4; ++i) {
 				bookmarkData[i] = bookmarkData[i].trim(); // 공백 제거
@@ -31,7 +56,8 @@ public class BookmarkList {
 					bookmarkData[2], bookmarkData[3]);
 			return tempBookmark;
 		}
-		else { // bookmarkData.length == 5 // file에서 읽는 경우
+		*/
+		//else { // bookmarkData.length == 5 // file에서 읽는 경우
 			for (int i = 0; i < 5; ++i) {
 				bookmarkData[i] = bookmarkData[i].trim(); // 공백 제거
 			}
@@ -40,7 +66,7 @@ public class BookmarkList {
 			tempBookmark = new Bookmark(bookmarkData[0], bookmarkData[1], 
 					bookmarkData[2], bookmarkData[3], bookmarkData[4]);
 			return tempBookmark;
-		}
+		//}
 	}
 	
 	public Boolean checkRule(Bookmark addedBookmark) { // true -> 규칙 통과, false -> 규칙 탈락
@@ -65,36 +91,11 @@ public class BookmarkList {
 		
 		if (addedBookmark.url.isEmpty()) { // url
 			System.out.println("URL is missing");
+			
 			return false;
 		}		
 		
 		return true;
-	}
-	
-	public void fileToBookmarkList() throws FileNotFoundException {
-		// 파일에 기술된 북마크 정보를 읽어 Bookmark / BookmarkList 객체 만듦(동기화)
-		bookmarkCounter = 0;
-		
-		try {
-			bookmarkDBScanner = new Scanner(bookmarkDB);
-		} catch (Exception e) {
-			System.out.println("File not found!");
-		}
-		
-		while(bookmarkDBScanner.hasNextLine()) {
-			String data = bookmarkDBScanner.nextLine(); 
-			Bookmark tempBookmark = this.splitLine(data);
-			if(this.checkRule(tempBookmark) == true) {
-				bookmarkList[bookmarkCounter] = this.splitLine(data);
-				bookmarkCounter++;
-			}
-			else {
-				System.out.println("Rule wrong");
-				System.exit(0);
-			}
-		}
-		System.out.println("Bookmark synchronization completed!");
-		System.out.println("Current number of bookmark: "+(bookmarkCounter));
 	}
 	
 	public void inputNewBookmark() { // tempBookmark 객체 생성
@@ -146,6 +147,7 @@ public class BookmarkList {
 		fw.close();
 	}
 	
+	/*
 	public void mergeByGroup() {
 		Boolean[] flagArray;
 		flagArray = new Boolean[bookmarkCounter];
@@ -163,5 +165,30 @@ public class BookmarkList {
 				}
 			}
 		}
+	}
+	*/
+	
+	public void mergeByGroup() {
+		Bookmark[] tempBookmarkList = new Bookmark[100];
+		int indexCounter = 0;
+		Boolean[] flagArray;
+		
+		flagArray = new Boolean[bookmarkCounter];
+		
+		Arrays.fill(flagArray, true); // true -> 아직 출력 X, false -> 이미 출력 O 
+		
+		for(int i = 0; i < bookmarkCounter; ++i) {
+			if (flagArray[i] == true) {
+				tempBookmarkList[indexCounter++] = bookmarkList[i];
+				for(int j = i + 1; j < bookmarkCounter; ++j) {
+					if(bookmarkList[i].groupName.equals(bookmarkList[j].groupName)) {
+						flagArray[j] = false;
+						tempBookmarkList[indexCounter++] = bookmarkList[j];
+					}
+				}
+			}
+		}
+		
+		bookmarkList = tempBookmarkList;
 	}
 }
