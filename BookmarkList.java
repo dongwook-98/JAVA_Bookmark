@@ -129,7 +129,8 @@ public class BookmarkList {
 		Arrays.fill(flagArray, true); // true -> 아직 출력 X, false -> 이미 출력 O 
 		
 		for(int i = 0; i < bookmarkCounter; ++i) {
-			if (flagArray[i] == true) {
+			if (flagArray[i] == true && !bookmarkList[i].groupName.isEmpty()) {
+				flagArray[i] = false;
 				tempBookmarkList[indexCounter++] = bookmarkList[i];
 				for(int j = i + 1; j < bookmarkCounter; ++j) {
 					if(bookmarkList[i].groupName.equals(bookmarkList[j].groupName)) {
@@ -139,6 +140,10 @@ public class BookmarkList {
 				}
 			}
 		}
+		for (int i = 0; i < bookmarkCounter; ++i) {
+			if (flagArray[i] == true) tempBookmarkList[indexCounter++] = bookmarkList[i]; 
+		}
+		
 		bookmarkList = tempBookmarkList;
 	}
 }
