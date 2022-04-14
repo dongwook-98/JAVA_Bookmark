@@ -1,5 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 import java.util.Arrays;
 import java.net.MalformedURLException;
@@ -55,7 +57,7 @@ public class BookmarkList {
 	private Bookmark splitLine(String line) {
 		String[] bookmarkData = line.split(",|;", -1);
 		// 매개변수로 받은 line을 ,나;로 split된 값을 bookmarkData에 저장한다.
-		// split에 -1 옵션을 넣어줘서 값이 없는 칸도 null로 저장해준다.
+		// split에 -1 옵션을 넣어줘서 값이 없는 칸도 저장해준다.
 		for (int i = 0; i < bookmarkData.length; ++i) {
 			bookmarkData[i] = bookmarkData[i].trim(); // 공백 제거
 		}
@@ -74,7 +76,8 @@ public class BookmarkList {
 		final String dayPattern = "([0-2][0-9]|3[01]|[0-9])";
 		final String hourPattern = "([01][0-9]|2[0-4]|[0-9])";
 		final String minutePattern = "([0-5][0-9]|[0-9])";
-		final String pattern = yearPattern+"-"+monthPattern+"-"+dayPattern+"_"+hourPattern+":"+minutePattern;
+		final String pattern = yearPattern+"-"+monthPattern+"-"
+				+dayPattern+"_"+hourPattern+":"+minutePattern;
 		// addedTime 패턴을 검사해줄 pattern
 		
 		try {
@@ -114,9 +117,9 @@ public class BookmarkList {
 		int indexCounter = 0;
 		// 새롭게 생성될 객체의 index를 count 해주는 변수
 		Boolean[] flagArray;
-		// group별로 정렬 시에 BookmarkList의 Bookmark들이 tempBookmarkList로 옮겨졌는지를 기록하는 Boolean array형 변수
+		// group별로 정렬 시에 BookmarkList의 Bookmark들이 
+		// tempBookmarkList로 옮겨졌는지를 기록하는 Boolean array형 변수
 		// true -> 아직 옮겨지지 않음, false -> 이미 옮겨짐
-		
 		flagArray = new Boolean[bookmarkCounter];
 		Arrays.fill(flagArray, true); // true로 flagArray를 채워 놓음 
 		
@@ -136,15 +139,35 @@ public class BookmarkList {
 					}
 				}
 			}
-			else if (bookmarkList[i].getGroupName().isEmpty()){
+			else if (flagArray[i] == true && bookmarkList[i].getGroupName().isEmpty()){
 				// group이 공백인 북마크는 따로 묶어주지 않고 임시 객체에 순서대로 옮겨줌
 				tempBookmarkList[indexCounter++] = bookmarkList[i];
 				flagArray[i] = false;
 			}
-			else continue;
-			// flagArray[i]가 false인 경우는 건너뜀
+			else continue; // flagArray[i]가 false인 경우는 건너뜀
 		}
 		bookmarkList = tempBookmarkList;
 		// bookmarkList에 반영
+	}
+	
+	public void bookmarkListToFile(){ // BookmarkList객체를 파일에 저장
+		try {
+			FileWriter fw = new FileWriter(bookmarkDB, false);
+			// 이미 파일이 있다면 덮어 씌움
+			for (int i = 0; i < bookmarkCounter; ++i) {
+				String data = bookmarkList[i].getName()
+						+", "+bookmarkList[i].getAddedTime()
+						+", "+bookmarkList[i].getUrl()
+						+", "+bookmarkList[i].getGroupName()
+						+", "+bookmarkList[i].getMemo()+"\n";
+				// 북마크 하나를 파일에 쓸 형식으로 변환
+				fw.write(data);
+				// file에 출력
+			}
+			fw.close();
+			// file 닫아주기
+		} catch (IOException e) {
+			System.out.println("Unknwon BookmarkList data File ");
+		}
 	}
 }
